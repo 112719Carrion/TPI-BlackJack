@@ -15,7 +15,7 @@ export class UsuarioService {
 
   //comparar el usuario y la contraseña con la api  
   login(usuario: string, password: string): Observable<any>{
-    const url = this.APIUrl + "login/" + usuario + "/" + password;
+    const url = this.APIUrl + "usuario/login/" + usuario + "/" + password;
         const headers = { 'Content-Type': 'application/json' };
         return this.http.get(url, { headers })
   }

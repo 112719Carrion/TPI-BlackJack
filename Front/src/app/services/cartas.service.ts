@@ -49,4 +49,16 @@ export class CartasService {
         const headers = { 'Content-Type': 'application/json' };
         return this.http.get(url, { headers })
   }
+
+  guardarPartida(idUsuario: number): Observable<any>{
+    const url = this.APIUrl + "guardar/" + idUsuario;
+        const headers = { 'Content-Type': 'application/json' };
+        return this.http.get(url, { headers })
+  }
+
+  cargarPartida(): Observable<any>{
+    const url = this.APIUrl + "guardar";
+        const headers = { 'Content-Type': 'application/json' };
+        return this.http.get(url, { headers })
+  }
 }

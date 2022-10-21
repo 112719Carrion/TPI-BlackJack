@@ -1,11 +1,11 @@
 package tpi.backend.Controller;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import tpi.backend.Models.Carta;
 
+import java.sql.*;
 import java.util.ArrayList;
 
 @RestController
@@ -19,6 +19,7 @@ public class Controller {
     private ArrayList<Carta> mazoJugadorAnterior = new ArrayList<>();
 
     private ArrayList<Carta> mazoCrupierAnterior = new ArrayList<>();
+
 
 
     public Controller(){
@@ -78,7 +79,12 @@ public class Controller {
         mazoCartas.add(new Carta(10, "Tréboles", "assets/images/13T.jpg"));
     }
 
-    @GetMapping("/test/{mazo}")
+    @GetMapping("/test")
+    public boolean test(){
+        return true;
+    }
+
+    @GetMapping("/{mazo}")
     public ArrayList<Carta> test(@PathVariable int mazo) {
         if (mazo == 1){
             return mazoJugador;
@@ -86,6 +92,8 @@ public class Controller {
             return mazoCrupier;
         }
     }
+
+
 
     @GetMapping("/cartas/{tipoJugador}")
     public Carta obtenerCarta(@PathVariable int tipoJugador) {
@@ -175,5 +183,64 @@ public class Controller {
             return 0;
         }
     }
+
+    //make a function to save the game in database
+    @GetMapping("/guardar")
+    public void guardarJuego() {
+
+        try {
+
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
+            PreparedStatement st = conn.prepareStatement("INSERT INTO mazojugador (valor, naipe, imagenURL) VALUES (?, ?,?)");
+
+            for (Carta carta : mazoJugador) {
+                st.setInt(1, carta.getValor());
+                st.setString(2, carta.getNaipe());
+                st.setString(3, carta.getImagenUrl());
+                st.executeUpdate();
+            }
+
+            st = conn.prepareStatement("INSERT INTO mazocrupier (valor, naipe, imagenURL) VALUES (?, ?,?)");
+
+            for (Carta carta : mazoCrupier) {
+                st.setInt(1, carta.getValor());
+                st.setString(2, carta.getNaipe());
+                st.setString(3, carta.getImagenUrl());
+                st.executeUpdate();
+            }
+
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+    }
+
+
+    //make a function to load the game from database
+    @GetMapping("/cargar")
+    public boolean cargarJuego() {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM mazojugador");
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()) {
+                mazoJugador.add(new Carta(rs.getInt("valor"), rs.getString("naipe"), rs.getString("imagenURL")));
+            }
+
+            st = conn.prepareStatement("SELECT * FROM mazocrupier");
+            rs = st.executeQuery();
+
+            while (rs.next()) {
+                mazoCrupier.add(new Carta(rs.getInt("valor"), rs.getString("naipe"), rs.getString("imagenURL")));
+            }
+            return true;
+
+        } catch (Exception exc) {
+            return false;
+        }
+    }
+
+
+
 
 }

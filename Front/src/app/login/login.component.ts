@@ -26,6 +26,7 @@ export class LoginComponent implements OnInit {
 
     this.usuarioService.login(this.usuario.email, this.usuario.password).subscribe(data => {
       if(data) {
+        
         this.router.navigate(['/game']);
       } else {
         alert('Usuario o contraseña incorrectos');
