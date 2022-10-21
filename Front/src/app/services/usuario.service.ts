@@ -20,5 +20,11 @@ export class UsuarioService {
         return this.http.get(url, { headers })
   }
 
+  registrar(usuario: string, password: string): Observable<any>{
+    const url = this.APIUrl + "usuario/registro/" + usuario + "/" + password;
+        const headers = { 'Content-Type': 'application/json' };
+        return this.http.get(url, { headers })
+  }
+
   
 }

@@ -175,7 +175,9 @@ export class TableroComponent implements OnInit, OnDestroy {
       cancelButtonText: 'No, salir',
     }).then((result) => {
       if (result.isConfirmed) {
-        this.cartasService.guardarPartida().subscribe((data) => {
+        this.router.navigate(['']);
+      }else{
+      this.router.navigate(['']);
       }
     });
   }

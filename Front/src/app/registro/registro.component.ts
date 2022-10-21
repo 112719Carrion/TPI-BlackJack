@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Usuario } from 'src/models/Usuario';
+import { UsuarioService } from '../services/usuario.service';
 
 @Component({
   selector: 'app-registro',
@@ -10,7 +11,8 @@ import { Usuario } from 'src/models/Usuario';
 export class RegistroComponent implements OnInit {
 
   usuario = {} as Usuario;
-  constructor(private router: Router) { 
+  constructor(private router: Router,
+    private usuarioService: UsuarioService) { 
     this.usuario = new Usuario(0, '', '');
   }
 
@@ -22,9 +24,14 @@ export class RegistroComponent implements OnInit {
       return alert('Completar los campos correctamente');
     }
 
-    if(!this.registrarUser) return alert('Error al registrar usuario');
-    alert('Usuario registrado correctamente');
-    this.router.navigate(['/game']);
+    this.usuarioService.registrar(this.usuario.email, this.usuario.password).subscribe(data => {
+      if(data) {
+        this.router.navigate(['']);
+      } else {
+        alert('Error');
+      }
+    });
+    
   }
 
   validarMail(): boolean {
@@ -36,7 +43,5 @@ export class RegistroComponent implements OnInit {
     return this.usuario.password.length >= 6 && this.usuario.password === this.usuario.passwordConfirmation;
   }
 
-  registrarUser(): boolean {
-    return true;
-  }
+  
 }
