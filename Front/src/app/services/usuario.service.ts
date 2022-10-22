@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Usuario } from 'src/models/Usuario';
+import {  Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,9 +8,19 @@ import { Usuario } from 'src/models/Usuario';
 export class UsuarioService {
 
   APIUrl = "http://localhost:8080/";
-  usuario: Usuario;
+  private usuarioID: Subject<number>;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) { 
+    this.usuarioID = new Subject<number>();
+  }
+
+  getUsuarioID(): Observable<number> {
+    return this.usuarioID.asObservable();
+  }
+
+  setUsuarioID(id: number) {
+    this.usuarioID.next(id);
+  }
 
   //comparar el usuario y la contraseña con la api  
   login(usuario: string, password: string): Observable<any>{
@@ -26,5 +35,10 @@ export class UsuarioService {
         return this.http.get(url, { headers })
   }
 
+
+
+  
+
+  
   
 }

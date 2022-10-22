@@ -50,14 +50,26 @@ export class CartasService {
         return this.http.get(url, { headers })
   }
 
-  guardarPartida(idUsuario: number): Observable<any>{
-    const url = this.APIUrl + "guardar/" + idUsuario;
+  guardarPartida(id: number): Observable<any>{
+    const url = this.APIUrl + "guardar/" + id;
         const headers = { 'Content-Type': 'application/json' };
         return this.http.get(url, { headers })
   }
 
-  cargarPartida(): Observable<any>{
-    const url = this.APIUrl + "guardar";
+  cargarPartidaJugador(id: number): Observable<any>{
+    const url = this.APIUrl + "cargarjugador/" + id;
+        const headers = { 'Content-Type': 'application/json' };
+        return this.http.get(url, { headers })
+  }
+
+  cargarPartidaCrupier(id: number): Observable<any>{
+    const url = this.APIUrl + "cargarcrupier/" + id;
+        const headers = { 'Content-Type': 'application/json' };
+        return this.http.get(url, { headers })
+  }
+
+  hayPartidaGuardada(id: number): Observable<any>{
+    const url = this.APIUrl + "hayJuegoGuardado/" + id;
         const headers = { 'Content-Type': 'application/json' };
         return this.http.get(url, { headers })
   }

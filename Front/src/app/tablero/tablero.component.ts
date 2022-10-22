@@ -1,46 +1,73 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Carta } from 'src/models/Carta';
 import Swal from 'sweetalert2';
 import { CartasService } from '../services/cartas.service';
+import { UsuarioService } from '../services/usuario.service';
 
 @Component({
   selector: 'app-tablero',
   templateUrl: './tablero.component.html',
   styleUrls: ['./tablero.component.css'],
 })
-export class TableroComponent implements OnInit, OnDestroy {
+export class TableroComponent implements OnInit {
   cartasJugador: Carta[] = [];
   cartasCrupier: Carta[] = [];
   puntajeJugador: number = 0;
   puntajeCrupier: number = 0;
   activo: boolean = false;
-  constructor(public cartasService: CartasService, private router: Router) {}
+  idUsuario: number;
+  
+  constructor(public cartasService: CartasService, 
+    private router: Router,
+    private usuarioService : UsuarioService) {}
 
   ngOnInit(): void {
+    this.usuarioService.getUsuarioID().subscribe((data) => {
+      this.idUsuario = data;
+      alert(this.idUsuario);
+    });
     this.comenzarJuego();
+    
   }
-  ngOnDestroy(): void {
-    this.reiniciar();
-  }
-
 
   comenzarJuego(): void {
-    Swal.fire({
-      title: 'Comenzando juego',
-      text: 'Espere un momento',
-      allowOutsideClick: false,
-      timer: 1000,
-      timerProgressBar: true,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    }).then((result) => {
-      this.pedirCartaJugador();
-      this.pedirCartaCrupier();
-      setTimeout(() => {
-        this.pedirCartaJugador();
-      }, 1000);
+    this.cartasService.hayPartidaGuardada(this.idUsuario).subscribe((data) => {
+      console.log(data);
+      console.log(this.idUsuario);
+      if(data){
+        Swal.fire({
+          title: 'Comenzando juego',
+          text: 'Espere un momento',
+          allowOutsideClick: false,
+          timer: 1000,
+          timerProgressBar: true,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        }).then((result) => {
+          this.cargarPartida();
+          setTimeout(() => {
+          }, 1000);
+        });
+      }else{
+        Swal.fire({
+          title: 'Comenzando juego',
+          text: 'Espere un momento',
+          allowOutsideClick: false,
+          timer: 1000,
+          timerProgressBar: true,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+        }).then((result) => {
+          this.pedirCartaJugador();
+          this.pedirCartaCrupier();
+          setTimeout(() => {
+            this.pedirCartaJugador();
+          }, 1000);
+        });
+      }
     });
   }
 
@@ -152,13 +179,24 @@ export class TableroComponent implements OnInit, OnDestroy {
     this.cartasService.reset().subscribe((data) => {
       console.log(data);
       if (data) {
-        console.log('reset');
         this.cartasJugador = [];
         this.cartasCrupier = [];
         this.puntajeJugador = 0;
         this.puntajeCrupier = 0;
         this.activo = false;
-        this.comenzarJuego();
+      }
+    });
+  }
+
+  salir(): void {
+    this.cartasService.reset().subscribe((data) => {
+      console.log(data);
+      if (data) {
+        this.cartasJugador = [];
+        this.cartasCrupier = [];
+        this.puntajeJugador = 0;
+        this.puntajeCrupier = 0;
+        this.activo = false;
       }
     });
   }
@@ -175,10 +213,53 @@ export class TableroComponent implements OnInit, OnDestroy {
       cancelButtonText: 'No, salir',
     }).then((result) => {
       if (result.isConfirmed) {
+        this.guardarPartida();
+        this.salir();
         this.router.navigate(['']);
       }else{
-      this.router.navigate(['']);
+        this.salir();
+        this.router.navigate(['']);
       }
     });
   }
+
+  guardarPartida(): void {
+    this.cartasService.guardarPartida(this.idUsuario).subscribe((data) => {
+      console.log(data);
+      if (data) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Partida guardada',
+          text: 'La partida ha sido guardada',
+        });
+      }
+    });
+  }
+
+  cargarPartida(): void {
+    Swal.fire({
+      title: 'Aviso',
+      text: '¿Desea cargar la partida guardada?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cargar',
+      cancelButtonText: 'No, iniciar nueva partida',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.cartasService.cargarPartidaJugador(this.idUsuario).subscribe((data) => {
+          if (data) {
+            this.cartasJugador = data.cartasJugador;
+          }
+        });
+        this.cartasService.cargarPartidaCrupier(this.idUsuario).subscribe((data) => {
+          if (data) {
+            this.cartasCrupier = data.cartasJugador;
+          }
+        });
+      }
+    });
+  }
+
 }

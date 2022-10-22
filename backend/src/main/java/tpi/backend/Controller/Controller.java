@@ -185,12 +185,24 @@ public class Controller {
     }
 
     //make a function to save the game in database
-    @GetMapping("/guardar")
-    public void guardarJuego() {
+    @GetMapping("/guardar/{id}")
+    public void guardarJuego(@PathVariable int id) {
 
         try {
 
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
+
+            //Borrado de los mazos viejos
+            //mazo jugador
+            PreparedStatement delete = conn.prepareStatement("DELETE FROM mazojugador WHERE id_jugador = ?");
+            delete.setInt(1, id);
+            delete.executeUpdate();
+
+            delete = conn.prepareStatement("DELETE FROM mazojugador WHERE id = ?");
+            delete.setInt(1, id);
+            delete.executeUpdate();
+
+            //Guardar el mazo del jugador
             PreparedStatement st = conn.prepareStatement("INSERT INTO mazojugador (valor, naipe, imagenURL) VALUES (?, ?,?)");
 
             for (Carta carta : mazoJugador) {
@@ -216,29 +228,71 @@ public class Controller {
 
 
     //make a function to load the game from database
-    @GetMapping("/cargar")
-    public boolean cargarJuego() {
+    @GetMapping("/cargarjugador/{id}")
+    public ArrayList<Carta> cargarMazoJugador(@PathVariable int id) {
+        ArrayList<Carta> mazo = new ArrayList<>();
         try {
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
-            PreparedStatement st = conn.prepareStatement("SELECT * FROM mazojugador");
+
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM mazojugador WHERE id_jugador = ?");
+            st.setInt(1, id);
             ResultSet rs = st.executeQuery();
 
             while (rs.next()) {
                 mazoJugador.add(new Carta(rs.getInt("valor"), rs.getString("naipe"), rs.getString("imagenURL")));
+                mazo.add(new Carta(rs.getInt("valor"), rs.getString("naipe"), rs.getString("imagenURL")));
             }
+            return mazo;
 
-            st = conn.prepareStatement("SELECT * FROM mazocrupier");
-            rs = st.executeQuery();
+
+        } catch (Exception exc) {
+            return null;
+        }
+    }
+
+
+    @GetMapping("/cargarcrupier/{id}")
+    public ArrayList<Carta> cargarMazoCrupier(@PathVariable int id) {
+        ArrayList<Carta> mazo = new ArrayList<>();
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
+
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM mazocrupier WHERE id = ?");
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
 
             while (rs.next()) {
                 mazoCrupier.add(new Carta(rs.getInt("valor"), rs.getString("naipe"), rs.getString("imagenURL")));
+                mazo.add(new Carta(rs.getInt("valor"), rs.getString("naipe"), rs.getString("imagenURL")));
             }
-            return true;
+            return mazo;
+
+
+        } catch (Exception exc) {
+            return null;
+        }
+    }
+
+
+    @GetMapping("/hayJuegoGuardado/{id}")
+    public boolean hayJuegoGuardado(@PathVariable int id) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM mazojugador WHERE id_jugador = ?");
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+
+            if (rs.next()) {
+                return true;
+            } else {
+                return false;
+            }
 
         } catch (Exception exc) {
             return false;
         }
     }
+
 
 
 

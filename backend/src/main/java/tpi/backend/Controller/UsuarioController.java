@@ -20,18 +20,22 @@ public class UsuarioController {
     }
 
     @GetMapping("/login/{usuario}/{password}")
-    public boolean login(@PathVariable String usuario, @PathVariable String password) {
+    public int login(@PathVariable String usuario, @PathVariable String password) {
         try {
+            int id = 0;
             Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/blackjack", "root", "123456");
-            PreparedStatement st = conn.prepareStatement("SELECT idusuario, usuario, password FROM usuario WHERE usuario = ? AND password = ? ");
+            PreparedStatement st = conn.prepareStatement("SELECT idusuario FROM usuario WHERE usuario = ? AND password = ? ");
             st.setString(1, usuario);
             st.setString(2, password);
 
             ResultSet rs = st.executeQuery();
-            return true;
+            while (rs.next()) {
+                id = rs.getInt("idusuario");
+            }
+            return id;
 
         } catch (Exception exc) {
-            return false;
+            return 0;
         }
     }
 

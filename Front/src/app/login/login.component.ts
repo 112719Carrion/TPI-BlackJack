@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { Usuario } from 'src/models/Usuario';
 import { UsuarioService } from '../services/usuario.service';
@@ -25,8 +25,8 @@ export class LoginComponent implements OnInit {
     }
 
     this.usuarioService.login(this.usuario.email, this.usuario.password).subscribe(data => {
-      if(data) {
-        
+      if(data != 0) {
+        this.usuarioService.setUsuarioID(data);
         this.router.navigate(['/game']);
       } else {
         alert('Usuario o contraseña incorrectos');
