@@ -1,41 +1,36 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Carta } from 'src/models/Carta';
 import Swal from 'sweetalert2';
 import { CartasService } from '../services/cartas.service';
-import { UsuarioService } from '../services/usuario.service';
 
 @Component({
   selector: 'app-tablero',
   templateUrl: './tablero.component.html',
   styleUrls: ['./tablero.component.css'],
 })
-export class TableroComponent implements OnInit {
+export class TableroComponent implements OnInit, OnDestroy {
   cartasJugador: Carta[] = [];
   cartasCrupier: Carta[] = [];
   puntajeJugador: number = 0;
   puntajeCrupier: number = 0;
   activo: boolean = false;
-  idUsuario: number;
-  
-  constructor(public cartasService: CartasService, 
-    private router: Router,
-    private usuarioService : UsuarioService) {}
+  idUsuario: number = 0;
+
+  constructor(public cartasService: CartasService, private router: Router) {}
 
   ngOnInit(): void {
-    this.usuarioService.getUsuarioID().subscribe((data) => {
-      this.idUsuario = data;
-      alert(this.idUsuario);
-    });
+    this.idUsuario = Number(localStorage.getItem('idUsuario'));
     this.comenzarJuego();
-    
+  }
+
+  ngOnDestroy(): void {
+    localStorage.clear();
   }
 
   comenzarJuego(): void {
     this.cartasService.hayPartidaGuardada(this.idUsuario).subscribe((data) => {
-      console.log(data);
-      console.log(this.idUsuario);
-      if(data){
+      if (data) {
         Swal.fire({
           title: 'Comenzando juego',
           text: 'Espere un momento',
@@ -47,27 +42,30 @@ export class TableroComponent implements OnInit {
           },
         }).then((result) => {
           this.cargarPartida();
-          setTimeout(() => {
-          }, 1000);
+          setTimeout(() => {}, 1000);
         });
-      }else{
-        Swal.fire({
-          title: 'Comenzando juego',
-          text: 'Espere un momento',
-          allowOutsideClick: false,
-          timer: 1000,
-          timerProgressBar: true,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-        }).then((result) => {
-          this.pedirCartaJugador();
-          this.pedirCartaCrupier();
-          setTimeout(() => {
-            this.pedirCartaJugador();
-          }, 1000);
-        });
+      } else {
+        this.comenzarJuegoDe0();
       }
+    });
+  }
+
+  comenzarJuegoDe0(): void {
+    Swal.fire({
+      title: 'Comenzando juego',
+      text: 'Espere un momento',
+      allowOutsideClick: false,
+      timer: 1000,
+      timerProgressBar: true,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    }).then((result) => {
+      this.pedirCartaJugador();
+      this.pedirCartaCrupier();
+      setTimeout(() => {
+        this.pedirCartaJugador();
+      }, 1000);
     });
   }
 
@@ -184,6 +182,7 @@ export class TableroComponent implements OnInit {
         this.puntajeJugador = 0;
         this.puntajeCrupier = 0;
         this.activo = false;
+        this.comenzarJuego();
       }
     });
   }
@@ -214,9 +213,8 @@ export class TableroComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.guardarPartida();
-        this.salir();
         this.router.navigate(['']);
-      }else{
+      } else {
         this.salir();
         this.router.navigate(['']);
       }
@@ -248,18 +246,31 @@ export class TableroComponent implements OnInit {
       cancelButtonText: 'No, iniciar nueva partida',
     }).then((result) => {
       if (result.isConfirmed) {
-        this.cartasService.cargarPartidaJugador(this.idUsuario).subscribe((data) => {
-          if (data) {
-            this.cartasJugador = data.cartasJugador;
-          }
-        });
-        this.cartasService.cargarPartidaCrupier(this.idUsuario).subscribe((data) => {
-          if (data) {
-            this.cartasCrupier = data.cartasJugador;
-          }
-        });
+        this.cartasService
+          .cargarPartidaJugador(this.idUsuario)
+          .subscribe((data) => {
+            if (data) {
+              for (let i = 0; i < data.length; i++) {
+                this.cartasJugador.push(data[i]);
+              }
+              this.calcularPuntos();
+              this.logicaJugador();
+            }
+          });
+        this.cartasService
+          .cargarPartidaCrupier(this.idUsuario)
+          .subscribe((data) => {
+            if (data) {
+              for (let i = 0; i < data.length; i++) {
+                this.cartasCrupier.push(data[i]);
+              }
+              this.logicaAsesCrupier();
+              this.calcularPuntos();
+            }
+          });
+      } else {
+        this.comenzarJuegoDe0();
       }
     });
   }
-
 }
