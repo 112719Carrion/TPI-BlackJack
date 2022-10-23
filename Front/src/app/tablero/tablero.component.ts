@@ -213,6 +213,7 @@ export class TableroComponent implements OnInit, OnDestroy {
     }).then((result) => {
       if (result.isConfirmed) {
         this.guardarPartida();
+        this.salir();
         this.router.navigate(['']);
       } else {
         this.salir();
