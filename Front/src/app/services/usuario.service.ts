@@ -23,17 +23,22 @@ export class UsuarioService {
   }
 
   //comparar el usuario y la contraseña con la api  
-  login(usuario: string, password: string): Observable<any>{
-    const url = this.APIUrl + "usuario/login/" + usuario + "/" + password;
-        const headers = { 'Content-Type': 'application/json' };
-        return this.http.get(url, { headers })
+  login(usuario: string, password: string): Observable<any> {
+    // post de usuario y contraseña enviando headers
+    const url = `${this.APIUrl}usuario/login`;
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post(url, { usuario, password }, { headers })
+
   }
 
-  registrar(usuario: string, password: string): Observable<any>{
-    const url = this.APIUrl + "usuario/registro/" + usuario + "/" + password;
-        const headers = { 'Content-Type': 'application/json' };
-        return this.http.get(url, { headers })
+  registrar(usuario: string, password: string): Observable<any> {
+    // post de usuario y contraseña enviando headers
+    const url = `${this.APIUrl}usuario/registrar`;
+    const headers = { 'Content-Type': 'application/json' };
+    return this.http.post(url, { usuario, password }, { headers })
+
   }
+  
 
 
 

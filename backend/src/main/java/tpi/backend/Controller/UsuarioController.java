@@ -1,5 +1,6 @@
 package tpi.backend.Controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tpi.backend.Models.Usuario;
 
@@ -19,39 +20,37 @@ public class UsuarioController {
         return true;
     }
 
-    @GetMapping("/login/{usuario}/{password}")
-    public int login(@PathVariable String usuario, @PathVariable String password) {
+    @PostMapping("/login")
+    public ResponseEntity<Usuario> login(@RequestBody Usuario usuario){
         try {
-            int id = 0;
-            Connection conn = DriverManager.getConnection("jdbc:mysql://us-cdbr-east-06.cleardb.net:3306/heroku_b038d7c98f39121", "b902534b0a0d2e", "f00230c6");
-            PreparedStatement st = conn.prepareStatement("SELECT idusuario FROM usuario WHERE usuario = ? AND password = ? ");
-            st.setString(1, usuario);
-            st.setString(2, password);
-
-            ResultSet rs = st.executeQuery();
-            while (rs.next()) {
-                id = rs.getInt("idusuario");
+            Connection con = DriverManager.getConnection("jdbc:mysql://us-cdbr-east-06.cleardb.net:3306/heroku_b038d7c98f39121", "b902534b0a0d2e", "f00230c6");
+            PreparedStatement preparedStatement = con.prepareStatement("SELECT * FROM usuario WHERE usuario = ? AND password = ?");
+            preparedStatement.setString(1, usuario.getUsuario());
+            preparedStatement.setString(2, usuario.getPassword());
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if(resultSet.next()){
+                Usuario user = new Usuario(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3));
+                return ResponseEntity.ok(user);
             }
-            return id;
-
-        } catch (Exception exc) {
-            return 0;
+            return ResponseEntity.notFound().build();
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
     }
 
-    @GetMapping("registro/{usuario}/{password}")
-    public boolean setUsuario(@PathVariable String usuario, @PathVariable String password) {
+    @PostMapping("/registrar")
+    public ResponseEntity<Usuario> register(@RequestBody Usuario usuario){
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://us-cdbr-east-06.cleardb.net:3306/heroku_b038d7c98f39121", "b902534b0a0d2e", "f00230c6");
-            PreparedStatement st = conn.prepareStatement("INSERT INTO usuario (usuario, password) VALUES (?, ?)");
-            st.setString(1, usuario);
-            st.setString(2, password);
-            st.executeUpdate();
-            return true;
-
-        } catch (Exception exc) {
-            return false;
+            Connection con = DriverManager.getConnection("jdbc:mysql://us-cdbr-east-06.cleardb.net:3306/heroku_b038d7c98f39121", "b902534b0a0d2e", "f00230c6");
+            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO usuario (usuario, password) VALUES (?, ?)");
+            preparedStatement.setString(1, usuario.getUsuario());
+            preparedStatement.setString(2, usuario.getPassword());
+            preparedStatement.execute();
+            return ResponseEntity.ok(usuario);
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
     }
-
 }
